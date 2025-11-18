@@ -2,7 +2,7 @@ package com.mendel.transactioncore.domain.ports.in;
 
 import com.mendel.transactioncore.domain.model.Transaction;
 
-public interface CreateTransactionUseCase {
+public interface PutTransactionUseCase {
 
-	Transaction create(CreateTransactionInput command);
+	Transaction upsert(PutTransactionInput command);
 }

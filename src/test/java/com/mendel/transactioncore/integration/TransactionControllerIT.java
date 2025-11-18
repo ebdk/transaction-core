@@ -11,8 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,6 +42,61 @@ class TransactionControllerIT {
 		var request = json("/contracts/post-transaction/create-transaction-missing-parent-request.json");
 
 		mockMvc.perform(post("/transactions")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.detail").value("Transaction 999 not found"));
+	}
+
+	@Test
+	void storesTransactionWithPut() throws Exception {
+		var request = json("/contracts/put-transaction/put-transaction-success-request.json");
+		var response = json("/contracts/put-transaction/put-transaction-success-response.json");
+
+		mockMvc.perform(put("/transactions/{id}", 10)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isOk())
+				.andExpect(content().json(response));
+	}
+
+	@Test
+	void putSupportsParentRelationship() throws Exception {
+		var parentRequest = json("/contracts/put-transaction/put-transaction-success-request.json");
+		mockMvc.perform(put("/transactions/{id}", 10)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(parentRequest))
+				.andExpect(status().isOk());
+
+		var childRequest = json("/contracts/put-transaction/put-transaction-child-request.json");
+
+		mockMvc.perform(put("/transactions/{id}", 11)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(childRequest))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void putFailsForDuplicateId() throws Exception {
+		var request = json("/contracts/put-transaction/put-transaction-success-request.json");
+
+		mockMvc.perform(put("/transactions/{id}", 15)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(put("/transactions/{id}", 15)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.detail").value("Transaction 15 already exists"));
+	}
+
+	@Test
+	void putFailsWhenParentMissing() throws Exception {
+		var request = json("/contracts/put-transaction/put-transaction-missing-parent-request.json");
+
+		mockMvc.perform(put("/transactions/{id}", 21)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(request))
 				.andExpect(status().isNotFound())
