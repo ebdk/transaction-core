@@ -5,6 +5,7 @@ import com.mendel.transactioncore.domain.model.TransactionType;
 import com.mendel.transactioncore.domain.ports.out.TransactionRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,6 +24,11 @@ public class InMemoryTransactionRepository implements TransactionRepository {
 	}
 
 	@Override
+	public Optional<Transaction> findById(long id) {
+		return Optional.ofNullable(storage.get(id));
+	}
+
+	@Override
 	public boolean existsById(long id) {
 		return storage.containsKey(id);
 	}
@@ -31,6 +37,12 @@ public class InMemoryTransactionRepository implements TransactionRepository {
 	public Stream<Transaction> findByType(TransactionType type) {
 		return storage.values().stream()
 				.filter(tx -> tx.type() == type);
+	}
+
+	@Override
+	public Stream<Transaction> findChildrenOf(long parentId) {
+		return storage.values().stream()
+				.filter(tx -> tx.parentId() != null && tx.parentId() == parentId);
 	}
 
 	@Override
