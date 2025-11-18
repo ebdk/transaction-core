@@ -1,4 +1,4 @@
-package com.example.transaction_core;
+package com.mendel.transactioncore;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,5 +9,4 @@ class TransactionCoreApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

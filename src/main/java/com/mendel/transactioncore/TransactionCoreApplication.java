@@ -1,4 +1,4 @@
-package com.example.transaction_core;
+package com.mendel.transactioncore;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,4 @@ public class TransactionCoreApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(TransactionCoreApplication.class, args);
 	}
-
 }
