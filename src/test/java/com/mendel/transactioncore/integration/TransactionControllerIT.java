@@ -73,10 +73,44 @@ class TransactionControllerIT {
 		var request = json("/contracts/put-transaction/put-transaction-missing-parent-request.json");
 
 		mockMvc.perform(put("/transactions/{id}", 21)
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(request))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(request))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.detail").value("Transaction 999 not found"));
+	}
+
+	@Test
+	void invalidJsonReturnsBadRequest() throws Exception {
+		mockMvc.perform(put("/transactions/{id}", 30)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{invalid"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("Malformed JSON request"));
+	}
+
+	@Test
+	void unsupportedMediaTypeReturns415() throws Exception {
+		mockMvc.perform(put("/transactions/{id}", 31)
+						.contentType(MediaType.TEXT_PLAIN)
+						.content("amount=10"))
+				.andExpect(status().isUnsupportedMediaType())
+				.andExpect(jsonPath("$.detail").value("Unsupported content type"));
+	}
+
+	@Test
+	void rejectsUnknownTransactionType() throws Exception {
+		var request = """
+				{
+				  "amount": 10,
+				  "type": "cars"
+				}
+				""";
+
+		mockMvc.perform(put("/transactions/{id}", 40)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("Transaction type must be deposit or withdrawal"));
 	}
 
 	@Test
