@@ -1,5 +1,6 @@
 package com.mendel.transactioncore.infrastructure.adapter.in.web;
 
+import com.mendel.transactioncore.application.exception.TransactionAlreadyExistsException;
 import com.mendel.transactioncore.application.exception.TransactionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -15,6 +16,11 @@ class ApiExceptionHandler {
 	@ExceptionHandler(TransactionNotFoundException.class)
 	ProblemDetail handleTransactionNotFound(TransactionNotFoundException exception) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+	}
+
+	@ExceptionHandler(TransactionAlreadyExistsException.class)
+	ProblemDetail handleTransactionExists(TransactionAlreadyExistsException exception) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
