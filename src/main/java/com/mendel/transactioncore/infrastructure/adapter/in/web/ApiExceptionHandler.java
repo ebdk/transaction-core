@@ -31,4 +31,9 @@ class ApiExceptionHandler {
 				.orElse("Invalid request");
 		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
 	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	ProblemDetail handleIllegalArgument(IllegalArgumentException exception) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+	}
 }

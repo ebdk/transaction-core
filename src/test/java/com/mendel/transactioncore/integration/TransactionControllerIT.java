@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -101,6 +102,33 @@ class TransactionControllerIT {
 						.content(request))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.detail").value("Transaction 999 not found"));
+	}
+
+	@Test
+	void returnsIdsByType() throws Exception {
+		putTransaction(10, "/contracts/put-transaction/put-transaction-success-request.json");
+		putTransaction(12, "/contracts/put-transaction/put-transaction-success-request.json");
+		var expected = json("/contracts/get-transactions-by-type/get-by-type-deposit-response.json");
+
+		mockMvc.perform(get("/transactions/types/{type}", "deposit"))
+				.andExpect(status().isOk())
+				.andExpect(content().json(expected));
+	}
+
+	@Test
+	void rejectsUnknownType() throws Exception {
+		mockMvc.perform(get("/transactions/types/{type}", "planes"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("Unsupported transaction type: planes"));
+	}
+
+	private void putTransaction(long id, String requestResource) throws Exception {
+		var request = json(requestResource);
+
+		mockMvc.perform(put("/transactions/{id}", id)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(request))
+				.andExpect(status().isOk());
 	}
 
 	private String json(String path) throws IOException {

@@ -14,7 +14,12 @@ public enum TransactionType {
 		if (value == null || value.isBlank()) {
 			throw new IllegalArgumentException("Transaction type must be provided");
 		}
-		return TransactionType.valueOf(value.trim().toUpperCase(Locale.ROOT));
+		try {
+			return TransactionType.valueOf(value.trim().toUpperCase(Locale.ROOT));
+		}
+		catch (IllegalArgumentException ignored) {
+			throw new IllegalArgumentException("Unsupported transaction type: " + value);
+		}
 	}
 
 	@JsonValue
