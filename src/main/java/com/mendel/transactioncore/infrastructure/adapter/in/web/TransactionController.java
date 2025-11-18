@@ -2,6 +2,7 @@ package com.mendel.transactioncore.infrastructure.adapter.in.web;
 
 import com.mendel.transactioncore.domain.ports.in.CreateTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.CreateTransactionUseCase;
+import com.mendel.transactioncore.domain.ports.in.GetTransactionsIdsByTypeUseCase;
 import com.mendel.transactioncore.domain.ports.in.PutTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.PutTransactionUseCase;
 import com.mendel.transactioncore.infrastructure.adapter.in.web.dto.CreateTransactionRequest;
@@ -9,14 +10,16 @@ import com.mendel.transactioncore.infrastructure.adapter.in.web.dto.TransactionR
 import com.mendel.transactioncore.infrastructure.adapter.in.web.dto.TransactionStatusResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
@@ -24,10 +27,14 @@ public class TransactionController {
 
 	private final CreateTransactionUseCase createTransactionUseCase;
 	private final PutTransactionUseCase putTransactionUseCase;
+	private final GetTransactionsIdsByTypeUseCase getTransactionsIdsByTypeUseCase;
 
-	public TransactionController(CreateTransactionUseCase createTransactionUseCase, PutTransactionUseCase putTransactionUseCase) {
+	public TransactionController(CreateTransactionUseCase createTransactionUseCase,
+			PutTransactionUseCase putTransactionUseCase,
+			GetTransactionsIdsByTypeUseCase getTransactionsIdsByTypeUseCase) {
 		this.createTransactionUseCase = createTransactionUseCase;
 		this.putTransactionUseCase = putTransactionUseCase;
+		this.getTransactionsIdsByTypeUseCase = getTransactionsIdsByTypeUseCase;
 	}
 
 	@PostMapping
@@ -44,5 +51,11 @@ public class TransactionController {
 		var command = new PutTransactionInput(transactionId, request.amount(), request.type(), request.parentId());
 		putTransactionUseCase.upsert(command);
 		return ResponseEntity.ok(new TransactionStatusResponse("ok"));
+	}
+
+	@GetMapping("/types/{type}")
+	public ResponseEntity<List<Long>> getIdsByType(@PathVariable String type) {
+		var ids = getTransactionsIdsByTypeUseCase.getByType(type);
+		return ResponseEntity.ok(ids);
 	}
 }
