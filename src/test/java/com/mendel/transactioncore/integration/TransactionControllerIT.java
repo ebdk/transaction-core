@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,29 +24,6 @@ class TransactionControllerIT {
 
 	@Autowired
 	private MockMvc mockMvc;
-
-	@Test
-	void createsTransaction() throws Exception {
-		var request = json("/contracts/post-transaction/create-transaction-success-request.json");
-		var expectedResponse = json("/contracts/post-transaction/create-transaction-success-response.json");
-
-		mockMvc.perform(post("/transactions")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(request))
-				.andExpect(status().isCreated())
-				.andExpect(content().json(expectedResponse));
-	}
-
-	@Test
-	void failsWhenParentDoesNotExist() throws Exception {
-		var request = json("/contracts/post-transaction/create-transaction-missing-parent-request.json");
-
-		mockMvc.perform(post("/transactions")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(request))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.detail").value("Transaction 999 not found"));
-	}
 
 	@Test
 	void storesTransactionWithPut() throws Exception {
@@ -78,19 +54,18 @@ class TransactionControllerIT {
 	}
 
 	@Test
-	void putFailsForDuplicateId() throws Exception {
-		var request = json("/contracts/put-transaction/put-transaction-success-request.json");
+	void putOverwritesExistingTransaction() throws Exception {
+		putTransaction(10, "/contracts/put-transaction/put-transaction-success-request.json");
+		var update = json("/contracts/put-transaction/put-transaction-update-request.json");
 
-		mockMvc.perform(put("/transactions/{id}", 15)
+		mockMvc.perform(put("/transactions/{id}", 10)
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(request))
+						.content(update))
 				.andExpect(status().isOk());
 
-		mockMvc.perform(put("/transactions/{id}", 15)
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(request))
-				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.detail").value("Transaction 15 already exists"));
+		mockMvc.perform(get("/transactions/sum/{id}", 10))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.sum").value(7500));
 	}
 
 	@Test
