@@ -1,6 +1,6 @@
 # Transaction Core
 
-Hexagonal Spring Boot service that fulfils the Mendel REST challenge using Java 21 features (records, `var`, stream APIs) and an in-memory persistence adapter. The service stores transactions, allows creating them via POST/PUT, lists ids by type, and returns the recursive sum for any transaction chain.
+Hexagonal Spring Boot service that fulfils the Mendel REST challenge using Java 21 features (records, `var`, stream APIs) and an in-memory persistence adapter. The service stores transactions via idempotent `PUT` requests, lists ids by type, and returns the recursive sum for any transaction chain.
 
 ## Requirements
 
@@ -10,7 +10,7 @@ Hexagonal Spring Boot service that fulfils the Mendel REST challenge using Java 
 
 ## Architecture
 
-- **Domain** – `Transaction` record, `TransactionType`, and ports describing use cases (`CreateTransactionInput`, `PutTransactionInput`, `GetTransactionsIdsByTypeUseCase`, `GetTransactionSumUseCase`) as pure contracts.
+- **Domain** – `Transaction` record, `TransactionType`, and ports describing use cases (`PutTransactionInput`, `GetTransactionsIdsByTypeUseCase`, `GetTransactionSumUseCase`) as pure contracts.
 - **Application** – Use-case implementations orchestrating domain behaviour and enforcing invariants. They only depend on domain ports.
 - **Infrastructure adapters**
   - `adapter.out.persistence` – `InMemoryTransactionRepository` implementing `TransactionRepository`.
@@ -22,8 +22,7 @@ This keeps the core logic independent from delivery or storage technologies whil
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `POST` | `/transactions` | Creates a transaction with a generated id. Body: `{ "amount": 1000.0, "type": "deposit", "parentId": 10 }`. Response `201 Created` with the stored transaction. |
-| `PUT` | `/transactions/{transactionId}` | Creates a transaction using the provided id (fails with `409` if it exists). Returns `{ "status": "ok" }`. |
+| `PUT` | `/transactions/{transactionId}` | Creates or replaces a transaction using the provided id. Body: `{ "amount": 1000.0, "type": "deposit", "parent_id": 10 }`. `type` must be `deposit` or `withdrawal`. Returns `{ "status": "ok" }`. |
 | `GET` | `/transactions/types/{type}` | Returns `[id1, id2, ...]` sorted ascending for the given type (`deposit` or `withdrawal`). |
 | `GET` | `/transactions/sum/{transactionId}` | Returns `{ "sum": 20000.0 }` for the transaction and every descendant linked through `parentId`. |
 

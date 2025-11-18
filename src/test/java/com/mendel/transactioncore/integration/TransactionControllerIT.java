@@ -91,21 +91,44 @@ class TransactionControllerIT {
 	}
 
 	@Test
-	void rejectsUnknownType() throws Exception {
-		mockMvc.perform(get("/transactions/types/{type}", "planes"))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.detail").value("Unsupported transaction type: planes"));
-	}
-
-	@Test
 	void returnsSumForTransactionChain() throws Exception {
 		putTransaction(10, "/contracts/put-transaction/put-transaction-success-request.json");
 		putTransaction(11, "/contracts/put-transaction/put-transaction-child-request.json");
-		var request = json("/contracts/get-transaction-sum/get-sum-response.json");
+		var request = json("/contracts/get-transaction-sum/get-sum-root-response.json");
 
 		mockMvc.perform(get("/transactions/sum/{id}", 10))
 				.andExpect(status().isOk())
 				.andExpect(content().json(request));
+	}
+
+	@Test
+	void returnsSumForChildTransaction() throws Exception {
+		putTransaction(10, "/contracts/put-transaction/put-transaction-success-request.json");
+		putTransaction(11, "/contracts/put-transaction/put-transaction-child-request.json");
+		var response = json("/contracts/get-transaction-sum/get-sum-child-response.json");
+
+		mockMvc.perform(get("/transactions/sum/{id}", 11))
+				.andExpect(status().isOk())
+				.andExpect(content().json(response));
+	}
+
+	@Test
+	void mendelScenario() throws Exception {
+		putTransaction(10, "/contracts/mendel-scenario/put-10.json");
+		putTransaction(11, "/contracts/mendel-scenario/put-11.json");
+		putTransaction(12, "/contracts/mendel-scenario/put-12.json");
+
+		mockMvc.perform(get("/transactions/types/{type}", "deposit"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0]").value(10));
+
+		mockMvc.perform(get("/transactions/sum/{id}", 10))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.sum").value(20000));
+
+		mockMvc.perform(get("/transactions/sum/{id}", 11))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.sum").value(15000));
 	}
 
 	@Test

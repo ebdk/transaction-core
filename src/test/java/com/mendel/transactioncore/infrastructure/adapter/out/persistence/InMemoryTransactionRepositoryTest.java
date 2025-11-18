@@ -36,4 +36,27 @@ class InMemoryTransactionRepositoryTest {
 
 		assertEquals(first + 1, second);
 	}
+
+	@Test
+	void findByIdReturnsSavedTransaction() {
+		var transaction = new Transaction(42L, new BigDecimal("10.00"), TransactionType.DEPOSIT, null);
+		repository.save(transaction);
+
+		var result = repository.findById(42L);
+
+		assertTrue(result.isPresent());
+		assertEquals(transaction, result.get());
+	}
+
+	@Test
+	void findChildrenOfReturnsOnlyMatches() {
+		repository.save(new Transaction(1L, new BigDecimal("10.00"), TransactionType.DEPOSIT, null));
+		repository.save(new Transaction(2L, new BigDecimal("5.00"), TransactionType.DEPOSIT, 1L));
+		repository.save(new Transaction(3L, new BigDecimal("7.00"), TransactionType.WITHDRAWAL, 2L));
+
+		var children = repository.findChildrenOf(1L).toList();
+
+		assertEquals(1, children.size());
+		assertEquals(2L, children.get(0).id());
+	}
 }
