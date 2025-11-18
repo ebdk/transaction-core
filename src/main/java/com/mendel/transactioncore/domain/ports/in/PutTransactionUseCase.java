@@ -4,5 +4,5 @@ import com.mendel.transactioncore.domain.model.Transaction;
 
 public interface PutTransactionUseCase {
 
-	Transaction upsert(PutTransactionCommand command);
+	Transaction upsert(PutTransactionInput command);
 }

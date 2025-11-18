@@ -3,7 +3,7 @@ package com.mendel.transactioncore.application.usecases;
 import com.mendel.transactioncore.application.exception.TransactionAlreadyExistsException;
 import com.mendel.transactioncore.application.exception.TransactionNotFoundException;
 import com.mendel.transactioncore.domain.model.Transaction;
-import com.mendel.transactioncore.domain.ports.in.PutTransactionCommand;
+import com.mendel.transactioncore.domain.ports.in.PutTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.PutTransactionUseCase;
 import com.mendel.transactioncore.domain.ports.out.TransactionRepository;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class PutTransactionUseCaseImpl implements PutTransactionUseCase {
 	}
 
 	@Override
-	public Transaction upsert(PutTransactionCommand command) {
+	public Transaction upsert(PutTransactionInput command) {
 		var transactionId = command.transactionId();
 		if (repository.existsById(transactionId)) {
 			throw new TransactionAlreadyExistsException(transactionId);

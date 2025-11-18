@@ -3,7 +3,7 @@ package com.mendel.transactioncore.application.usecases;
 import com.mendel.transactioncore.application.exception.TransactionNotFoundException;
 import com.mendel.transactioncore.domain.model.Transaction;
 import com.mendel.transactioncore.domain.model.TransactionType;
-import com.mendel.transactioncore.domain.ports.in.CreateTransactionCommand;
+import com.mendel.transactioncore.domain.ports.in.CreateTransactionInput;
 import com.mendel.transactioncore.infrastructure.adapter.out.persistence.InMemoryTransactionRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class CreateTransactionUseCaseImplTest {
 
 	@Test
 	void createsTransactionWithoutParent() {
-		var command = new CreateTransactionCommand(new BigDecimal("1000.00"), TransactionType.DEPOSIT, null);
+		var command = new CreateTransactionInput(new BigDecimal("1000.00"), TransactionType.DEPOSIT, null);
 
 		var transaction = useCase.create(command);
 
@@ -39,7 +39,7 @@ class CreateTransactionUseCaseImplTest {
 		var parentId = repository.nextIdentity();
 		var parent = new Transaction(parentId, new BigDecimal("10.00"), TransactionType.DEPOSIT, null);
 		repository.save(parent);
-		var command = new CreateTransactionCommand(new BigDecimal("20.00"), TransactionType.WITHDRAWAL, parentId);
+		var command = new CreateTransactionInput(new BigDecimal("20.00"), TransactionType.WITHDRAWAL, parentId);
 
 		var transaction = useCase.create(command);
 
@@ -49,7 +49,7 @@ class CreateTransactionUseCaseImplTest {
 
 	@Test
 	void failsWhenParentDoesNotExist() {
-		var command = new CreateTransactionCommand(new BigDecimal("10.00"), TransactionType.DEPOSIT, 999L);
+		var command = new CreateTransactionInput(new BigDecimal("10.00"), TransactionType.DEPOSIT, 999L);
 
 		assertThrows(TransactionNotFoundException.class, () -> useCase.create(command));
 	}

@@ -1,8 +1,8 @@
 package com.mendel.transactioncore.infrastructure.adapter.in.web;
 
-import com.mendel.transactioncore.domain.ports.in.CreateTransactionCommand;
+import com.mendel.transactioncore.domain.ports.in.CreateTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.CreateTransactionUseCase;
-import com.mendel.transactioncore.domain.ports.in.PutTransactionCommand;
+import com.mendel.transactioncore.domain.ports.in.PutTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.PutTransactionUseCase;
 import com.mendel.transactioncore.infrastructure.adapter.in.web.dto.CreateTransactionRequest;
 import com.mendel.transactioncore.infrastructure.adapter.in.web.dto.TransactionResponse;
@@ -32,7 +32,7 @@ public class TransactionController {
 
 	@PostMapping
 	public ResponseEntity<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest request) {
-		var command = new CreateTransactionCommand(request.amount(), request.type(), request.parentId());
+		var command = new CreateTransactionInput(request.amount(), request.type(), request.parentId());
 		var transaction = createTransactionUseCase.create(command);
 		var response = new TransactionResponse(transaction.id(), transaction.amount(), transaction.type(), transaction.parentId());
 		return ResponseEntity.created(URI.create("/transactions/%d".formatted(transaction.id()))).body(response);
@@ -41,7 +41,7 @@ public class TransactionController {
 	@PutMapping("/{transactionId}")
 	public ResponseEntity<TransactionStatusResponse> put(@PathVariable long transactionId,
 														 @Valid @RequestBody CreateTransactionRequest request) {
-		var command = new PutTransactionCommand(transactionId, request.amount(), request.type(), request.parentId());
+		var command = new PutTransactionInput(transactionId, request.amount(), request.type(), request.parentId());
 		putTransactionUseCase.upsert(command);
 		return ResponseEntity.ok(new TransactionStatusResponse("ok"));
 	}

@@ -4,7 +4,7 @@ import com.mendel.transactioncore.application.exception.TransactionAlreadyExists
 import com.mendel.transactioncore.application.exception.TransactionNotFoundException;
 import com.mendel.transactioncore.domain.model.Transaction;
 import com.mendel.transactioncore.domain.model.TransactionType;
-import com.mendel.transactioncore.domain.ports.in.PutTransactionCommand;
+import com.mendel.transactioncore.domain.ports.in.PutTransactionInput;
 import com.mendel.transactioncore.infrastructure.adapter.out.persistence.InMemoryTransactionRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class PutTransactionUseCaseImplTest {
 
 	@Test
 	void storesTransactionWithProvidedId() {
-		var command = new PutTransactionCommand(10L, new BigDecimal("1000.00"), TransactionType.DEPOSIT, null);
+		var command = new PutTransactionInput(10L, new BigDecimal("1000.00"), TransactionType.DEPOSIT, null);
 
 		var transaction = useCase.upsert(command);
 
@@ -39,7 +39,7 @@ class PutTransactionUseCaseImplTest {
 	void failsWhenTransactionAlreadyExists() {
 		var existing = new Transaction(7L, new BigDecimal("1.00"), TransactionType.DEPOSIT, null);
 		repository.save(existing);
-		var command = new PutTransactionCommand(7L, new BigDecimal("5.00"), TransactionType.WITHDRAWAL, null);
+		var command = new PutTransactionInput(7L, new BigDecimal("5.00"), TransactionType.WITHDRAWAL, null);
 
 		assertThrows(TransactionAlreadyExistsException.class, () -> useCase.upsert(command));
 	}
@@ -47,7 +47,7 @@ class PutTransactionUseCaseImplTest {
 	@Test
 	@SuppressWarnings("DataFlowIssue")
 	void failsWhenParentDoesNotExist() {
-		var command = new PutTransactionCommand(8L, new BigDecimal("5.00"), TransactionType.WITHDRAWAL, 1L);
+		var command = new PutTransactionInput(8L, new BigDecimal("5.00"), TransactionType.WITHDRAWAL, 1L);
 
 		assertThrows(TransactionNotFoundException.class, () -> useCase.upsert(command));
 	}

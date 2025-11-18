@@ -4,5 +4,5 @@ import com.mendel.transactioncore.domain.model.Transaction;
 
 public interface CreateTransactionUseCase {
 
-	Transaction create(CreateTransactionCommand command);
+	Transaction create(CreateTransactionInput command);
 }

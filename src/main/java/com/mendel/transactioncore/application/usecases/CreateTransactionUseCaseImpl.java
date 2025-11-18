@@ -2,7 +2,7 @@ package com.mendel.transactioncore.application.usecases;
 
 import com.mendel.transactioncore.application.exception.TransactionNotFoundException;
 import com.mendel.transactioncore.domain.model.Transaction;
-import com.mendel.transactioncore.domain.ports.in.CreateTransactionCommand;
+import com.mendel.transactioncore.domain.ports.in.CreateTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.CreateTransactionUseCase;
 import com.mendel.transactioncore.domain.ports.out.TransactionRepository;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class CreateTransactionUseCaseImpl implements CreateTransactionUseCase {
 	}
 
 	@Override
-	public Transaction create(CreateTransactionCommand command) {
+	public Transaction create(CreateTransactionInput command) {
 		var parentId = command.parentId();
 		if (parentId != null && !repository.existsById(parentId)) {
 			throw new TransactionNotFoundException(parentId);
