@@ -2,6 +2,7 @@ package com.mendel.transactioncore.infrastructure.adapter.in.web;
 
 import com.mendel.transactioncore.domain.ports.in.CreateTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.CreateTransactionUseCase;
+import com.mendel.transactioncore.domain.ports.in.GetTransactionSumUseCase;
 import com.mendel.transactioncore.domain.ports.in.GetTransactionsIdsByTypeUseCase;
 import com.mendel.transactioncore.domain.ports.in.PutTransactionInput;
 import com.mendel.transactioncore.domain.ports.in.PutTransactionUseCase;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/transactions")
@@ -28,13 +30,16 @@ public class TransactionController {
 	private final CreateTransactionUseCase createTransactionUseCase;
 	private final PutTransactionUseCase putTransactionUseCase;
 	private final GetTransactionsIdsByTypeUseCase getTransactionsIdsByTypeUseCase;
+	private final GetTransactionSumUseCase getTransactionSumUseCase;
 
 	public TransactionController(CreateTransactionUseCase createTransactionUseCase,
 			PutTransactionUseCase putTransactionUseCase,
-			GetTransactionsIdsByTypeUseCase getTransactionsIdsByTypeUseCase) {
+			GetTransactionsIdsByTypeUseCase getTransactionsIdsByTypeUseCase,
+			GetTransactionSumUseCase getTransactionSumUseCase) {
 		this.createTransactionUseCase = createTransactionUseCase;
 		this.putTransactionUseCase = putTransactionUseCase;
 		this.getTransactionsIdsByTypeUseCase = getTransactionsIdsByTypeUseCase;
+		this.getTransactionSumUseCase = getTransactionSumUseCase;
 	}
 
 	@PostMapping
@@ -57,5 +62,11 @@ public class TransactionController {
 	public ResponseEntity<List<Long>> getIdsByType(@PathVariable String type) {
 		var ids = getTransactionsIdsByTypeUseCase.getByType(type);
 		return ResponseEntity.ok(ids);
+	}
+
+	@GetMapping("/sum/{transactionId}")
+	public ResponseEntity<Map<String, Number>> getSum(@PathVariable long transactionId) {
+		var sum = getTransactionSumUseCase.getSum(transactionId);
+		return ResponseEntity.ok(Map.of("sum", sum));
 	}
 }

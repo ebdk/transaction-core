@@ -122,6 +122,24 @@ class TransactionControllerIT {
 				.andExpect(jsonPath("$.detail").value("Unsupported transaction type: planes"));
 	}
 
+	@Test
+	void returnsSumForTransactionChain() throws Exception {
+		putTransaction(10, "/contracts/put-transaction/put-transaction-success-request.json");
+		putTransaction(11, "/contracts/put-transaction/put-transaction-child-request.json");
+		var request = json("/contracts/get-transaction-sum/get-sum-response.json");
+
+		mockMvc.perform(get("/transactions/sum/{id}", 10))
+				.andExpect(status().isOk())
+				.andExpect(content().json(request));
+	}
+
+	@Test
+	void sumFailsWhenTransactionNotFound() throws Exception {
+		mockMvc.perform(get("/transactions/sum/{id}", 999))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.detail").value("Transaction 999 not found"));
+	}
+
 	private void putTransaction(long id, String requestResource) throws Exception {
 		var request = json(requestResource);
 
